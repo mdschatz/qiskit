@@ -1,13 +1,13 @@
+import click
 from matrix_util import null_space
 import numpy as np
 from qiskit import(
   QuantumCircuit,
   execute,
   Aer)
-import sys
 
 
-# From Fig 15 Intro to Quantum Computing
+# From Fig 15 Intro to Quantum Computing, Without the Physics
 def simon_circuit(Uf, n_qbits):
 	circuit = QuantumCircuit(2*n_qbits, n_qbits)
 	q_registers = list(range(2*n_qbits))
@@ -27,7 +27,7 @@ def simon_circuit(Uf, n_qbits):
 	return circuit
 
 
-# From Section 4.3 Intro to Quantum Computing
+# From Section 4.3 Intro to Quantum Computing, Without the Physics
 def simons_alg(Uf, n_qbits):
 	circuit = simon_circuit(Uf, n_qbits)
 	simulator = Aer.get_backend('qasm_simulator')
@@ -54,6 +54,7 @@ def simons_alg(Uf, n_qbits):
 
 		# Debugging
 		# print(f"\n\niter {nIter}")
+		# print(distribution)
 		# print(f"max K found: {k} fraction: {count_frac}")
 		# print("\nE")
 		# print(E)
@@ -68,7 +69,7 @@ def simons_alg(Uf, n_qbits):
 	return a_vec
 
 
-# Created from 6.2 Intro to Quantum Computing
+# Created from 6.2 Intro to Quantum Computing, Without the Physics
 def circuit_flip_but_bit(n_qbits, t_bit):
 	circuit = QuantumCircuit(2*n_qbits)
 
@@ -113,15 +114,21 @@ def get_Uf(n_qbits, t_bit):
 	return result.get_unitary(circuit, 6)
 	
 
-n = int(sys.argv[1])
-t_bit = int(sys.argv[2])
-assert n > t_bit
+@click.command()
+@click.option("--n", type=int, help="Number of q-bits.", default=3)
+@click.option("--t", type=int, help="Omitted bit during flip.", default=0)
+def main(n, t):
+	assert n > t
 
-Uf = get_Uf(n, t_bit)
-a_vec = simons_alg(Uf, n)
+	Uf = get_Uf(n, t)
+	a_vec = simons_alg(Uf, n)
 
-# Debugging
-# print("A")
-# print(a_vec)
+	# Debugging
+	# print("A")
+	# print(a_vec)
 
-verify_flip_but_bit(a_vec, t_bit)
+	verify_flip_but_bit(a_vec, t)
+
+
+if __name__ == "__main__":
+	main()
